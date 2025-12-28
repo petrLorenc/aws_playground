@@ -16,7 +16,7 @@ This directory contains Terraform code to set up a basic AWS infrastructure for 
                          └──────┬──────┘
                                 │
                          ┌──────▼──────┐
-                         │ Elastic IP  │
+                         │ Elastic IP (removed)  │
                          └──────┬──────┘
                                 │
 Internet ──────────────► Security Group ──► EC2 Instance
@@ -28,7 +28,7 @@ Internet ──────────────► Security Group ──► 
                                     │      ↓            │
                                     │ Frontend          │ ← Internal
                                     │      ↓            │
-                                    │ Backend           │ ← Internal
+                                    │ Backend           │ ← Internal (Simplified to this container only)
                                     │      ↓            │
                                     │ Database          │ ← Internal
                                     └───────────────────┘
