@@ -75,7 +75,7 @@ AIM - AWS Indentity and Management
     - Associations - link between a subnet and a route table
  - Security Groups - **stateful** (if inbound traffic is allowed, the response traffic is automatically allowed) virtual firewalls that control inbound and outbound traffic for AWS resources, stateful (return traffic is automatically allowed), EC2 level security, only allow rules (default deny all)
     - Can use anouther security group as a source/destination (reference by ID)
- - Network ACLs - **stateless** (no automatic allowance of return traffic) firewalls that control inbound and outbound traffic at the subnet level, more granular control than security groups, first match wins, one NACL per subnet
+ - Network ACLs (meaning Network Access Control Lists) - **stateless** (no automatic allowance of return traffic) firewalls that control inbound and outbound traffic at the subnet level, more granular control than security groups, first match wins, one NACL per subnet
  - Internet Gateway - allows communication between instances in your VPC and the internet, needed for public subnets
  - Interface Endpoints - elastic network interfaces (ENIs) with private IP addresses that serve as entry points for traffic destined to supported AWS services, powered by AWS PrivateLink (more higher control than Gateway Endpoints)
  - NAT Gateway/Instance - allows instances in private subnets to access the internet for updates, etc., without exposing them to inbound internet traffic (it is using IP address of NAT Gateway), do not use security groups with NAT (just NACLs), **need to be in public subnet**
@@ -103,3 +103,34 @@ AIM - AWS Indentity and Management
  - Storage Optimized - high disk throughput and IOPS (I, D, H families)
  - Accelerated Computing - specialized hardware for ML, graphics, etc. (P, G, F families)
 - You can hibernate the instance and continue later (RAM saved to EBS)
+- EBS - Elastic Block Store - persistent block storage for EC2 instances, can be attached/detached from instances, types:
+   - General Purpose SSD (gp2, gp3) - balanced performance and cost
+   - Provisioned IOPS SSD (io1, io2) - high performance for I/O-intensive applications
+   - Throughput Optimized HDD (st1) - low-cost for large sequential workloads
+   - Cold HDD (sc1) - lowest cost for infrequent access
+   - Magnetic (standard) - legacy option, not recommended for new applications
+ - Default root volume is destroyed when instance is terminated (can change this behavior)
+ - Bastion Host (jump server) - secure access point to private instances in a VPC, typically a small, hardened EC2 instance in a public subnet, use SSH or RDP to connect to the bastion host, then access private instances from there, **better to prefer SSM Session Manager for secure access without bastion hosts**
+ - Elastic Network Interfaces (ENI) - virtual network interfaces that can be attached to EC2 instances, can have multiple ENIs per instance for high availability or network segmentation
+   - when you assign a public IP to EC2 then it is taken from AWS public pool (returned when instance destroyed or IP diassociated) - ephemeral IP adress
+      - the private IP address stays the same
+   - Elastic IP Address (EIP) - static public IP address that can be associated with an EC2 instance or ENI, useful for maintaining a consistent IP address for applications, you are charged for EIPs that are not associated with running instances
+   - should use DNS names (Route 53) instead of EIPs when possible to avoid costs and improve flexibility
+- Dual-home instances - instances with multiple ENIs for redundancy or network segmentation 
+
+- EFS - Elastic File System - scalable file storage for EC2 instances, can be mounted on multiple instances simultaneously, ideal for shared file storage across instances, much more expensive than EBS (Elastic Block Store)
+
+## Route 53
+- scalable and highly available DNS web service, translates domain names to IP addresses, supports routing policies
+   - Top-level domain (TLD) - .com, .org, .net, etc.
+   - Second-level domain - **example**.com, **mywebsite**.org, etc.)
+- Port 53 - DNS uses UDP/TCP port 53 for communication
+- Public/Private hosted zones - public for internet-facing domains, private for internal domains within a VPC
+- Record type: A (IPv4), AAAA (IPv6), CNAME (alias to another domain), alias (AWS-specific alias to AWS resources), MX (mail exchange), TXT (text data), SRV (service location), NS (name server)
+   - A - multiple values allowed (round-robin)
+      - alias - special type of A record that maps a domain to an AWS resource (e.g., CloudFront, S3, ELB) without using an IP address
+- Routing policies:
+   - Simple - single resource for a domain
+   - Weighted - distribute traffic based on weights assigned to resources
+   - Latency-based - route traffic to the resource with the lowest latency
+   - Geolocation - route traffic based on the geographic location of the user

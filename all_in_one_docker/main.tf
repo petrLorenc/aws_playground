@@ -264,24 +264,6 @@ resource "aws_instance" "app" {
 }
 
 #------------------------------------------------------------------------------
-# Elastic IP (Optional)
-#------------------------------------------------------------------------------
-resource "aws_eip" "app" {
-  count  = var.create_elastic_ip ? 1 : 0
-  domain = "vpc"
-
-  tags = {
-    Name = "${local.name_prefix}-eip"
-  }
-}
-
-resource "aws_eip_association" "app" {
-  count         = var.create_elastic_ip ? 1 : 0
-  instance_id   = aws_instance.app.id
-  allocation_id = aws_eip.app[0].id
-}
-
-#------------------------------------------------------------------------------
 # Route53 Record (Optional)
 #------------------------------------------------------------------------------
 resource "aws_route53_record" "app" {
@@ -290,7 +272,7 @@ resource "aws_route53_record" "app" {
   name    = var.domain_name
   type    = "A"
   ttl     = 300
-  records = [var.create_elastic_ip ? aws_eip.app[0].public_ip : aws_instance.app.public_ip]
+  records = [aws_instance.app.public_ip]
 }
 
 #------------------------------------------------------------------------------

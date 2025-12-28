@@ -5,17 +5,12 @@ output "instance_id" {
 
 output "instance_public_ip" {
   description = "Public IP of the EC2 instance"
-  value       = var.create_elastic_ip ? aws_eip.app[0].public_ip : aws_instance.app.public_ip
+  value       = aws_instance.app.public_ip
 }
 
 output "instance_public_dns" {
   description = "Public DNS of the EC2 instance"
   value       = aws_instance.app.public_dns
-}
-
-output "elastic_ip" {
-  description = "Elastic IP address (if created)"
-  value       = var.create_elastic_ip ? aws_eip.app[0].public_ip : null
 }
 
 output "vpc_id" {
