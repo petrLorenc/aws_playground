@@ -1,17 +1,21 @@
+import asyncio
+import json
 import uuid
 from typing import AsyncGenerator
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
-from interfaces.models import ChatRequest, ChatResponse, StreamChunk
+import httpx
+from interfaces.models import ChatRequest, ChatResponse, StreamChunk, DatabaseChatRequest, ChatMessage, MessageRole
 from interfaces.endpoints import APIEndpoints
 
 from backend.auth import verify_api_key
 from backend.rate_limiter import rate_limiter
+from backend.conversation_history import conversation_history
+from backend.config import get_settings
 
 router = APIRouter(prefix=APIEndpoints.BACKEND_PREFIX)
-
 
 async def check_rate_limit(request: Request):
     """Dependency to check rate limit."""
@@ -24,26 +28,49 @@ async def generate_stream_response(message: str, conversation_id: str) -> AsyncG
     Generate streaming response chunks.
     This is a placeholder - will be replaced with actual database/LLM call.
     """
-    import asyncio
-    import json
+    previous_messages = conversation_history.get_history(conversation_id)
+    conversation_history.add_message(
+        conversation_id,
+        ChatMessage(role=MessageRole.USER, content=message),
+    )
+    request = DatabaseChatRequest(
+            query=ChatMessage(role=MessageRole.USER, content=message),
+            history=previous_messages,
+        )
+        
+    async with httpx.AsyncClient() as client:
+        async with client.stream(
+            "POST",
+            f"{get_settings().database_url}{APIEndpoints.DATABASE_PREFIX}{APIEndpoints.DATABASE_CHAT_STREAM}",
+            json=request.model_dump(),
+            headers={"X-API-Key": get_settings().database_api_key},
+            timeout=60.0,
+        ) as response:
+            if response.status_code != 200:
+                error_text = await response.aread()
+                stream_chunk = StreamChunk(
+                    content=f"Error: {response.status_code} - {error_text.decode()}",
+                    done=True,
+                    error=None,
+                )
+                yield f"data: {json.dumps(stream_chunk.model_dump())}\n\n"
+                return
+            
+            full_message = ""
+            async for line in response.aiter_lines():
+                if line.startswith("data: "):
+                    data = json.loads(line[6:])
+                    chunk = StreamChunk(**data)
+                    yield f"data: {json.dumps(chunk.model_dump())}\n\n"
+                    if chunk.content:
+                        full_message += chunk.content
+            # Update conversation history with assistant's response
+            conversation_history.add_message(
+                conversation_id,
+                ChatMessage(role=MessageRole.ASSISTANT, content=full_message),
+            )
+            
     
-    # Placeholder response chunks - will be replaced with database query results
-    chunks = [
-        "I received your message: ",
-        f'"{message}". ',
-        "This response will be powered by the database in the next step. ",
-        "Stay tuned!"
-    ]
-    
-    for chunk in chunks:
-        await asyncio.sleep(0.1)  # Simulate processing delay
-        stream_chunk = StreamChunk(content=chunk, done=False)
-        yield f"data: {json.dumps(stream_chunk.model_dump())}\n\n"
-    
-    # Send final chunk
-    final_chunk = StreamChunk(content="", done=True)
-    yield f"data: {json.dumps(final_chunk.model_dump())}\n\n"
-
 
 @router.post(APIEndpoints.BACKEND_CHAT, response_model=ChatResponse)
 async def chat(
@@ -64,7 +91,7 @@ async def chat(
     response_message = f"Received: {chat_request.message}. Database integration coming soon!"
     
     return ChatResponse(
-        message=response_message,
+        message=ChatMessage(role=MessageRole.ASSISTANT, content=response_message),
         conversation_id=conversation_id,
         sources=None,  # Will be populated from database
     )
@@ -76,7 +103,7 @@ async def chat_stream(
     chat_request: ChatRequest,
     api_key: str = Depends(verify_api_key),
     rate_limit: int = Depends(check_rate_limit),
-) -> StreamingResponse:
+) -> StreamingResponse: 
     """
     Handle streaming chat requests.
     
@@ -86,7 +113,7 @@ async def chat_stream(
     conversation_id = chat_request.conversation_id or str(uuid.uuid4())
     
     return StreamingResponse(
-        generate_stream_response(chat_request.message, conversation_id),
+        generate_stream_response(chat_request.message.content, conversation_id),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

@@ -9,4 +9,5 @@ class APIEndpoints:
     BACKEND_CHAT_STREAM: str = "/chat/stream"
 
     # Database endpoints
-    DATABASE_PREFIX: str = "/api/v1/database"
+    DATABASE_PREFIX: str = "/database"
+    DATABASE_CHAT_STREAM: str = "/chat/stream"

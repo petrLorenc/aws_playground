@@ -15,27 +15,20 @@ class Settings(BaseSettings):
     """
     model_config = SettingsConfigDict(
         env_file=".env",
-        # env_prefix="BACKEND_",
+        # env_prefix="DATABASE_",
         env_file_encoding="utf-8",
         extra="ignore",
     )
     
     # API Settings
-    api_title: str = "Graph RAG Chatbot API"
+    api_title: str = "Graph RAG Database API"
     api_version: str = "1.0.0"
     debug: bool = False
-    port: int = 9001
+    port: int = 9010
 
     # Authorization
-    api_key: str = "dev-api-key"  # Override in production
+    api_key: str = "my-secret"  # Override in production
     
-    # Rate Limiting
-    rate_limit_requests: int = 100  # Max requests per window
-    rate_limit_window_seconds: int = 60  # Time window in seconds
-    
-    # Database Settings
-    database_url: str = "http://localhost:9010"  # Override in production
-    database_api_key: str = "my-secret"  # Override in production
 
 # delayed singleton pattern for settings
 # want to try it from https://www.lihil.cc/blog/design-patterns-you-should-unlearn-in-python-part1/

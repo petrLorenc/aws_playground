@@ -17,13 +17,16 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    message: str
+    message: ChatMessage
     conversation_id: Optional[str] = None
     stream: bool = True
 
+class DatabaseChatRequest(BaseModel):
+    query: ChatMessage
+    history: List[ChatMessage] = []
 
 class ChatResponse(BaseModel):
-    message: str
+    message: ChatMessage
     conversation_id: str
     sources: Optional[List[str]] = None
 

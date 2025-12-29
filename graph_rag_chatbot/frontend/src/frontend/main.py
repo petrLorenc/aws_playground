@@ -21,7 +21,7 @@ class BackendClient:
     async def astream(self, question: str):
         """Stream responses from the backend."""
         request = ChatRequest(
-            message=question,
+            message=ChatMessage(role=MessageRole.USER, content=question),
             conversation_id=self.conversation_id,
             stream=True,
         )
