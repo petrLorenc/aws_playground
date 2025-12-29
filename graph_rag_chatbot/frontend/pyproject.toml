@@ -1,0 +1,12 @@
+[project]
+name = "frontend"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "interfaces",
+    "nicegui>=3.4.1",
+    "httpx>=0.27.0",
+]
+
+[tool.uv.sources]
+interfaces = { workspace = true }
