@@ -6,10 +6,10 @@ services:
     image: chatbot-backend
     container_name: chatbot-backend
     ports:
-      - "${BACKEND_PORT:?BACKEND_PORT not set}:${BACKEND_PORT:?BACKEND_PORT not set}"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     environment:
-      - BACKEND_DEBUG=${BACKEND_DEBUG:?BACKEND_DEBUG not set}
-      - BACKEND_DATABASE_URL=${BACKEND_DATABASE_URL:?BACKEND_DATABASE_URL not set}
+      - BACKEND_DEBUG=${BACKEND_DEBUG}
+      - BACKEND_DATABASE_URL=http://database:${DATABASE_PORT:?DATABASE_PORT not set}
       - BACKEND_PORT=${BACKEND_PORT:?BACKEND_PORT not set}
       - BACKEND_API_KEY=${BACKEND_API_KEY:?BACKEND_API_KEY not set}
       - BACKEND_RATE_LIMIT_REQUESTS=${BACKEND_RATE_LIMIT_REQUESTS:?BACKEND_RATE_LIMIT_REQUESTS not set}
@@ -37,9 +37,7 @@ services:
     ports:
       - "${DATABASE_PORT:?DATABASE_PORT not set}:${DATABASE_PORT:?DATABASE_PORT not set}"
     environment:
-      - DATABASE_DEBUG=${DATABASE_DEBUG:?DATABASE_DEBUG not set}
-      - API_TITLE=Graph RAG Chatbot Database
-      - API_VERSION=0.1.0
+      - DATABASE_DEBUG=${DATABASE_DEBUG}
       - DATABASE_PORT=${DATABASE_PORT:?DATABASE_PORT not set}
       - DATABASE_API_KEY=${DATABASE_API_KEY:?DATABASE_API_KEY not set}
       - DATABASE_LLM_ENDPOINT=${DATABASE_LLM_ENDPOINT:?DATABASE_LLM_ENDPOINT not set}
@@ -63,7 +61,7 @@ services:
     ports:
       - "8080:${FRONTEND_PORT:?FRONTEND_PORT not set}"
     environment:
-      - FRONTEND_BACKEND_URL=${FRONTEND_BACKEND_URL:?FRONTEND_BACKEND_URL not set}
+      - FRONTEND_BACKEND_URL=http://backend:${BACKEND_PORT:?BACKEND_PORT not set}
       - FRONTEND_API_KEY=${FRONTEND_API_KEY:?FRONTEND_API_KEY not set}
       - FRONTEND_PORT=${FRONTEND_PORT:?FRONTEND_PORT not set}
     networks:

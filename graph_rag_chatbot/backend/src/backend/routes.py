@@ -40,7 +40,7 @@ async def generate_stream_response(message: str, conversation_id: str) -> AsyncG
     async with httpx.AsyncClient() as client:
         async with client.stream(
             "POST",
-            f"{get_settings().database_url}{APIEndpoints.DATABASE_PREFIX}{APIEndpoints.DATABASE_CHAT_STREAM}",
+            f"{get_settings().database_url}{APIEndpoints.DATABASE_CHAT_STREAM}",
             json=request.model_dump(),
             headers={"X-API-Key": get_settings().database_api_key},
             timeout=60.0,
