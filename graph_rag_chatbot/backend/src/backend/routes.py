@@ -1,4 +1,3 @@
-import asyncio
 import json
 import uuid
 from typing import AsyncGenerator
@@ -15,7 +14,7 @@ from backend.rate_limiter import rate_limiter
 from backend.conversation_history import conversation_history
 from backend.config import get_settings
 
-router = APIRouter(prefix=APIEndpoints.BACKEND_PREFIX)
+router = APIRouter()
 
 async def check_rate_limit(request: Request):
     """Dependency to check rate limit."""

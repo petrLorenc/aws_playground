@@ -1,3 +1,4 @@
+import os
 from typing import Callable
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -7,8 +8,8 @@ class Settings(BaseSettings):
     """Application settings."""
     
     model_config = SettingsConfigDict(
-        env_file=".env",
-        # env_prefix="FRONTEND_",
+        env_file=os.getenv("ENV_FILE", ".env"),
+        env_prefix="FRONTEND_",
         env_file_encoding="utf-8",
         extra="ignore",
     )

@@ -8,7 +8,7 @@ from fastapi.responses import StreamingResponse
 from interfaces.models import DatabaseChatRequest, StreamChunk
 from interfaces.endpoints import APIEndpoints
 
-router = APIRouter(prefix=APIEndpoints.DATABASE_PREFIX)
+router = APIRouter()
 
 
 async def generate_stream_response(msg: DatabaseChatRequest) -> AsyncGenerator[str, None]:

@@ -1,0 +1,80 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: chatbot-backend
+    container_name: chatbot-backend
+    ports:
+      - "${BACKEND_PORT:?BACKEND_PORT not set}:${BACKEND_PORT:?BACKEND_PORT not set}"
+    environment:
+      - BACKEND_DEBUG=${BACKEND_DEBUG:?BACKEND_DEBUG not set}
+      - BACKEND_DATABASE_URL=${BACKEND_DATABASE_URL:?BACKEND_DATABASE_URL not set}
+      - BACKEND_PORT=${BACKEND_PORT:?BACKEND_PORT not set}
+      - BACKEND_API_KEY=${BACKEND_API_KEY:?BACKEND_API_KEY not set}
+      - BACKEND_RATE_LIMIT_REQUESTS=${BACKEND_RATE_LIMIT_REQUESTS:?BACKEND_RATE_LIMIT_REQUESTS not set}
+      - BACKEND_RATE_LIMIT_WINDOW_SECONDS=${BACKEND_RATE_LIMIT_WINDOW_SECONDS:?BACKEND_RATE_LIMIT_WINDOW_SECONDS not set}
+    networks:
+      - chatbot-network
+    depends_on:
+      database:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:${BACKEND_PORT:?BACKEND_PORT not set}/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    command: ["uv", "run", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "${BACKEND_PORT:?BACKEND_PORT not set}"]
+
+  database:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+    image: chatbot-database
+    container_name: chatbot-database
+    ports:
+      - "${DATABASE_PORT:?DATABASE_PORT not set}:${DATABASE_PORT:?DATABASE_PORT not set}"
+    environment:
+      - DATABASE_DEBUG=${DATABASE_DEBUG:?DATABASE_DEBUG not set}
+      - API_TITLE=Graph RAG Chatbot Database
+      - API_VERSION=0.1.0
+      - DATABASE_PORT=${DATABASE_PORT:?DATABASE_PORT not set}
+      - DATABASE_API_KEY=${DATABASE_API_KEY:?DATABASE_API_KEY not set}
+      - DATABASE_LLM_ENDPOINT=${DATABASE_LLM_ENDPOINT:?DATABASE_LLM_ENDPOINT not set}
+    networks:
+      - chatbot-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:${DATABASE_PORT:?DATABASE_PORT not set}/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    command: ["uv", "run", "uvicorn", "database.main:app", "--host", "0.0.0.0", "--port", "${DATABASE_PORT:?DATABASE_PORT not set}"]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: chatbot-frontend
+    container_name: chatbot-frontend
+    ports:
+      - "8080:${FRONTEND_PORT:?FRONTEND_PORT not set}"
+    environment:
+      - FRONTEND_BACKEND_URL=${FRONTEND_BACKEND_URL:?FRONTEND_BACKEND_URL not set}
+      - FRONTEND_API_KEY=${FRONTEND_API_KEY:?FRONTEND_API_KEY not set}
+      - FRONTEND_PORT=${FRONTEND_PORT:?FRONTEND_PORT not set}
+    networks:
+      - chatbot-network
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    command: ["uv", "run", "python", "frontend/src/frontend/main.py"]
+
+networks:
+  chatbot-network:
+    driver: bridge
+    name: chatbot-network

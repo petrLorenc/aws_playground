@@ -30,7 +30,7 @@ class BackendClient:
             try:
                 async with client.stream(
                     "POST",
-                    f"{self.base_url}{APIEndpoints.BACKEND_PREFIX}{APIEndpoints.BACKEND_CHAT_STREAM}",
+                    f"{self.base_url}{APIEndpoints.BACKEND_CHAT_STREAM}",
                     json=request.model_dump(),
                     headers={"X-API-Key": self.api_key},
                     timeout=60.0,
@@ -123,5 +123,6 @@ def root():
             .classes('text-xs self-end mr-8 m-[-1em] text-primary') \
             .classes('[&_a]:text-inherit [&_a]:no-underline [&_a]:font-medium')
 
-
-ui.run(root, title='Chat with Me...')
+if __name__ in {"__main__", "__mp_main__"}:
+    print("Using setting,", get_settings())
+    ui.run(root, title='Chat with Me...', port=get_settings().port)
