@@ -68,6 +68,8 @@ AIM - AWS Indentity and Management
  - Route Tables - set of rules (routes) that determine where network traffic is directed, each subnet must be associated with a route table
    - Main Route Table - default route table for the VPC, automatically associated with all subnets unless explicitly associated with another route table
    - **Custom Route Tables** - can be created for specific routing needs (e.g., public/private subnets), need to associate subnets with custom route tables
+   - **Private Subnet Route Table - routes traffic to NAT gateway/instance** for internet access (only outbound)
+   - **Public Subnet Route Table - routes traffic to internet gateway** for internet access (inbound and outbound)
    - Destination/Target/Local Route/Associations
     - Destination - CIDR block of the traffic
     - Target - where the traffic is directed (e.g., internet gateway, NAT gateway, VPC peering connection)
@@ -75,12 +77,17 @@ AIM - AWS Indentity and Management
     - Associations - link between a subnet and a route table
  - Security Groups - **stateful** (if inbound traffic is allowed, the response traffic is automatically allowed) virtual firewalls that control inbound and outbound traffic for AWS resources, stateful (return traffic is automatically allowed), EC2 level security, only allow rules (default deny all)
     - Can use anouther security group as a source/destination (reference by ID)
- - Network ACLs (meaning Network Access Control Lists) - **stateless** (no automatic allowance of return traffic) firewalls that control inbound and outbound traffic at the subnet level, more granular control than security groups, first match wins, one NACL per subnet
+    - It is very handy with Application Load Balancers (ALB) - allow inbound from ALB security group (ABL security group is having own rules)
+ - Network ACLs (meaning Network Access Control Lists) - **stateless** (no automatic allowance of return traffic) firewalls that control inbound and outbound traffic at the subnet level, more granular control than security groups, first match wins, one NACL per subnet, **can be shared across multiple subnets**
+      - Can **block based on IP**, protocol, port range (lower role number = higher priority)
  - Internet Gateway - allows communication between instances in your VPC and the internet, needed for public subnets
  - Interface Endpoints - elastic network interfaces (ENIs) with private IP addresses that serve as entry points for traffic destined to supported AWS services, powered by AWS PrivateLink (more higher control than Gateway Endpoints)
  - NAT Gateway/Instance - allows instances in private subnets to access the internet for updates, etc., without exposing them to inbound internet traffic (it is using IP address of NAT Gateway), do not use security groups with NAT (just NACLs), **need to be in public subnet**
     - NAT - network address translation - translates private IP addresses to public IP addresses for outbound traffic
  - VPC Peering - connects two VPCs to route traffic between them using private IP addresses, can be within the same account or across different accounts (cross-account, cross-region), not-transitive -> you need to create peering connection (not overlaping CIDR), then update route tables, and adjust security groups/NACLs
+ - VPC Flow logs - captures information about the IP traffic going to and from network interfaces in your VPC, useful for monitoring and troubleshooting network issues
+   - Amazon CloudWatch Logs or **S3** (cheaper), Firehose -> usually ingest by Athena for analysis
+   - 5 tuple - version, account ID, interface ID, **source IP, destination IP, source port, destination port, protocol**, packets, bytes, start time, end time, action (ACCEPT/REJECT), log status
 
 ### Notes
 - Multi-tier architecture - separates application components into different layers (e.g., web, application, database) for better scalability, security, and manageability
@@ -134,3 +141,94 @@ AIM - AWS Indentity and Management
    - Weighted - distribute traffic based on weights assigned to resources
    - Latency-based - route traffic to the resource with the lowest latency
    - Geolocation - route traffic based on the geographic location of the user
+
+# VPN - Virtual Private Network
+- securely connects remote networks or users to a VPC over the internet, encrypts data in transit
+- Types:
+ - Site-to-Site VPN - connects on-premises network to a VPC, uses customer gateway (on-premises) and virtual private gateway (VPC)
+ - Client VPN - allows remote users to securely access a VPC using OpenVPN-based clients, uses a VPN endpoint in the VPC
+
+# Elastic Load Balancing (ELB)
+- distributes incoming traffic across multiple targets (EC2 instances, containers, IP addresses) for high availability and fault tolerance
+- High Availability - automatically distributes traffic across multiple Availability Zones
+- Fault Tolerance - detects unhealthy targets and routes traffic to healthy ones (without data loss or service interruption)
+- Can work with custom DNS names (Route 53 - alias records)
+- Supports SSL/TLS termination for secure connections
+- Types:
+ - Application Load Balancer (ALB)
+   - Layer 7 (HTTP/HTTPS) load balancing - content-based routing
+   - HTTP, HTTPS, Websockets traffic, does not support unbroken TSL/SSL (pass-through)
+   - usually for **containers**
+   - rule conditions - host-based, path-based, HTTP header, HTTP method, query string, source IP
+   - rule actions - forward to target group, redirect, fixed response, authenticate via Cognito or OIDC
+   - X-Forwarded-For header - contains original client IP address
+ - Network Load Balancer (NLB)
+   - Layer 4 (TCP/UDP) load balancing - high performance and low latency
+   - TCP, UDP, TLS, and TCP_UDP traffic, supports unbroken TSL/SSL (pass-through)
+   - usually for **extreme performance needs or static IPs**
+   - preserves client IP address
+   - Assign one static IP per AZ, **Allows public EIP assignment** (can be a chain with ALB as next step)
+ - Classic Load Balancer (CLB) - legacy, not recommended for new applications
+ - Gateway Load Balancer (GLB)
+- Schemes:
+ - Internet-facing - public IP address, accessible from the internet
+ - Internal - private IP address, accessible only within the VPC
+- Routing algorithms:
+ - Round Robin - distributes traffic evenly across target groups
+ - Least outstanding requests - routes traffic to the target with the fewest active connections
+ - Weighted random
+
+# Auto scaling groups
+ - automatically adjusts the number of EC2 instances based on demand, ensures high availability and cost efficiency
+ - Templates - launch configurations or launch templates define instance settings (AMI, instance type, security groups, etc.), not using configurations anymore (deprecated)
+ - Template -> Auto Scaling Group (ASG) -> Scaling Policies/Alarms
+
+# S3 - Simple Storage Service
+- object storage service, stores data as objects in buckets, highly scalable and durable
+- Buckets - containers for objects, globally unique names, can have versioning, lifecycle policies, and access controls
+- Read-after-write consistency for PUTS of new objects and eventual consistency for overwrite PUTS and DELETES
+- Naming convetions - lowercase letters, numbers, hyphens, periods, 3-63 characters, no underscores or uppercase letters...
+- create multipart uploads for large objects (>100MB) for better performance and reliability (resume failed uploads)
+- **PutEvents can trigger Lambda functions**, SNS topics, SQS queues, or EventBridge rules (for example, process new images with Lambda)
+
+# AWS Lambda
+- serverless compute service, runs code in response to events, automatically manages compute resources
+- Event sources - S3, DynamoDB, Kinesis, SNS, API Gateway, CloudWatch Events, etc.
+- Supported languages - Node.js, Python, Java, C#, Go, Ruby, PowerShell, custom runtimes
+- Execution environment - isolated environment for running Lambda functions, includes OS, runtime, libraries, and temporary storage
+- Cold start - initial startup time for a Lambda function when it is invoked for the first time or after a period of inactivity, can be mitigated with provisioned concurrency
+- One of the critical considerations when deploying Lambda functions is how to expose them to the outside world. Traditionally, this has been achieved using **Amazon API Gateway**, but with the introduction of **Lambda Function URLs**, developers now have a more direct and cost-effective option (no additional cost, but lower number of features).
+
+
+# API Gateway
+ - fully managed service for creating, deploying, and managing APIs, supports RESTful and WebSocket APIs
+ - when created you will get default endpoint like: https://{api-id}.execute-api.{region}.amazonaws.com/{stage_name}/ which **cannot be mapped to custom domain without using Route 53 or other DNS services because it is shared endpoint across all AWS customers** - you need to create custom domain (with ACM certificate) and map it to your API stage (or add ELB in front of it, but it adding extra cost and complexity)
+
+# AWS WAF - Web Application Firewall
+ - protects web applications from common web exploits (SQL injection, XSS, etc.), works with CloudFront, **ALB, API Gateway**, AppSync
+ - Layer 7 (application layer) firewall - HTTP/HTTPS traffic filtering
+ - AWS WAF Concepts:
+   - Web ACLs (Access Control Lists) - set of rules to filter web requests (ALLOW, BLOCK, COUNT, CAPTCHA)
+   - Rules - conditions to match web requests (IP addresses, HTTP headers, URI strings, etc.)
+   - Rule Groups - collection of rules for easier management
+   - Managed Rules - pre-configured rulesets provided by AWS or third-party vendors
+ - Rule statemnets:
+   - IP Match - filter based on IP addresses or CIDR blocks
+   - Regex Match - filter based on regular expressions
+   - String Match - filter based on specific strings in requests
+   - Geo Match - filter based on geographic location of requests
+   - XSS Match - filter based on cross-site scripting attacks
+   - SQL Injection Match - filter based on SQL injection attacks
+   
+# Notes 
+## static websites hosting on S3
+- S3 bucket name must match the domain name (e.g., example.com)
+- Enable static website hosting in the bucket properties
+- Set up bucket policy to allow public read access to the objects
+- Use Route 53 to create an alias record pointing to the S3 website endpoint
+
+## ACM - AWS Certificate Manager
+- manages SSL/TLS certificates for AWS services, provides **free public certificates** for use with CloudFront, ALB, API Gateway, etc.
+- Domain validation - validates ownership of the domain using DNS or email methods (easy with Route 53 - creating a CNAME record automatically)
+- Private certificates - can create private certificates for internal use within a VPC using AWS Private CA (Certificate Authority)
+- regional service - certificates are region-specific
