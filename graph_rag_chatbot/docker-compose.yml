@@ -16,6 +16,9 @@ services:
       - BACKEND_RATE_LIMIT_WINDOW_SECONDS=${BACKEND_RATE_LIMIT_WINDOW_SECONDS:?BACKEND_RATE_LIMIT_WINDOW_SECONDS not set}
     networks:
       - chatbot-network
+    volumes:
+      - ./backend/src/:/app/backend/src/
+      - ./interfaces/src/:/app/interfaces/src/
     depends_on:
       database:
         condition: service_started
@@ -26,7 +29,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    command: ["uv", "run", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "${BACKEND_PORT:?BACKEND_PORT not set}"]
+    command: ["uv", "run", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "${BACKEND_PORT:?BACKEND_PORT not set}", "--reload"]
 
   database:
     build:
@@ -34,9 +37,18 @@ services:
       dockerfile: database/Dockerfile
     image: chatbot-database
     container_name: chatbot-database
+    volumes:
+      - ./database/src/:/app/database/src/
+      - ./interfaces/src/:/app/interfaces/src/
+    depends_on:
+      neo4j:
+        condition: service_healthy
     ports:
       - "${DATABASE_PORT:?DATABASE_PORT not set}:${DATABASE_PORT:?DATABASE_PORT not set}"
     environment:
+      - GRAPH_DATABASE_URI=bolt://neo4j:7687
+      - API_BASE_URL=${API_BASE_URL:?API_BASE_URL not set}
+      - API_KEY=${API_KEY:?API_KEY not set}
       - DATABASE_DEBUG=${DATABASE_DEBUG}
       - DATABASE_PORT=${DATABASE_PORT:?DATABASE_PORT not set}
       - DATABASE_API_KEY=${DATABASE_API_KEY:?DATABASE_API_KEY not set}
@@ -50,7 +62,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    command: ["uv", "run", "uvicorn", "database.main:app", "--host", "0.0.0.0", "--port", "${DATABASE_PORT:?DATABASE_PORT not set}"]
+    command: ["uv", "run", "uvicorn", "database.main:app", "--host", "0.0.0.0", "--port", "${DATABASE_PORT:?DATABASE_PORT not set}", "--reload"]
 
   frontend:
     build:
@@ -66,11 +78,40 @@ services:
       - FRONTEND_PORT=${FRONTEND_PORT:?FRONTEND_PORT not set}
     networks:
       - chatbot-network
+    volumes:
+      - ./frontend/src/:/app/frontend/src/
     depends_on:
       backend:
         condition: service_started
     restart: unless-stopped
     command: ["uv", "run", "python", "frontend/src/frontend/main.py"]
+
+  neo4j:
+    image: neo4j:latest
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j-data:/data
+      - "./certs:/ssl/:ro"
+    environment:
+      - NEO4J_AUTH=none
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4JLABS_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    networks:
+      - chatbot-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cypher-shell", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+volumes:
+  neo4j-data:
 
 networks:
   chatbot-network:

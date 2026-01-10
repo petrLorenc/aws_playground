@@ -232,3 +232,7 @@ AIM - AWS Indentity and Management
 - Domain validation - validates ownership of the domain using DNS or email methods (easy with Route 53 - creating a CNAME record automatically)
 - Private certificates - can create private certificates for internal use within a VPC using AWS Private CA (Certificate Authority)
 - regional service - certificates are region-specific
+
+## AWS Secret Manager
+- securely stores and manages sensitive information (database credentials, API keys, etc.)
+- not free - charged based on number of secrets and API calls (better to use SSM Parameter Store for simple use cases)

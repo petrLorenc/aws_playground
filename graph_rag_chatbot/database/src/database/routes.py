@@ -2,8 +2,10 @@ import asyncio
 import json
 from typing import AsyncGenerator
 
+from database.dependencies import get_llm, get_graph
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
+from langchain_neo4j import GraphCypherQAChain
 
 from interfaces.models import DatabaseChatRequest, StreamChunk
 from interfaces.endpoints import APIEndpoints
@@ -11,25 +13,25 @@ from interfaces.endpoints import APIEndpoints
 router = APIRouter()
 
 
-async def generate_stream_response(msg: DatabaseChatRequest) -> AsyncGenerator[str, None]:
+async def generate_stream_response(msg: DatabaseChatRequest, graph, llm) -> AsyncGenerator[str, None]:
     """
     Generate streaming response chunks.
     This is a placeholder - will be replaced with actual database/LLM call.
     """
+    chain = GraphCypherQAChain.from_llm(
+        llm=llm,
+        graph=graph,
+        allow_dangerous_requests=True,
+        verbose=True,  # Enable verbose mode to see the generated query
+    )
+    chain = llm
+
+    # Use astream() for streaming responses instead of ainvoke()
+    response_stream = chain.astream(msg.query.content) # testing purposes
     
-    
-    # Placeholder response chunks - will be replaced with database query results
-    chunks = [
-        "I received your message: ",
-        f'"{msg.query}". ',
-        "This response will be powered by the database in the next step. ",
-        "Stay tuned!",
-        str(msg.history)
-    ]
-    
-    for chunk in chunks:
-        await asyncio.sleep(0.1)  # Simulate processing delay
-        stream_chunk = StreamChunk(content=chunk, done=False)
+    async for chunk in response_stream:
+        print("Generated chunk:", chunk)
+        stream_chunk = StreamChunk(content=chunk.content, done=False)
         yield f"data: {json.dumps(stream_chunk.model_dump())}\n\n"
     
     # Send final chunk
@@ -41,13 +43,15 @@ async def generate_stream_response(msg: DatabaseChatRequest) -> AsyncGenerator[s
 async def chat_stream(
     request: Request,
     database_request: DatabaseChatRequest,
+    graph = Depends(get_graph),
+    llm = Depends(get_llm),
 ) -> StreamingResponse: 
     """
     Handle streaming chat requests.
     """
     print("Received database chat stream request:", database_request)
     return StreamingResponse(
-        generate_stream_response(database_request),
+        generate_stream_response(database_request, graph, llm),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

@@ -35,3 +35,12 @@ logs:
 rebuild: build-base
 	docker compose build $(SERVICE)
 	docker compose up -d $(SERVICE)
+
+up-frontend:	
+	ENV_FILE="./.env" uv run python ./frontend/src/frontend/main.py
+
+up-backend:	
+	ENV_FILE="./.env" uv run python ./backend/src/backend/main.py
+
+up-database:	
+	ENV_FILE="./.env" uv run python ./database/src/database/main.py
