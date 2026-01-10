@@ -7,6 +7,8 @@ from langchain_neo4j import Neo4jGraph, GraphCypherQAChain
 from langchain_openai import AzureChatOpenAI
 from pydantic import SecretStr
 from dotenv import load_dotenv
+from neo4j import GraphDatabase, RoutingControl, Driver
+
 
 from database.config import get_settings
 from database.routes import router
@@ -25,11 +27,9 @@ async def lifespan(app: FastAPI):
     load_dotenv()
     
     # Create connections to database and LLM
-    app.state.graph = Neo4jGraph(
-        url=os.getenv("GRAPH_DATABASE_URI", "bolt://localhost:7687"),
-        username=os.getenv("GRAPH_DATABASE_USERNAME", ""),
-        password=os.getenv("GRAPH_DATABASE_PASSWORD", ""),
-        enhanced_schema=True
+    app.state.driver = GraphDatabase.driver(
+        os.getenv("GRAPH_DATABASE_URI", "bolt://localhost:7687"),
+        auth=(os.getenv("GRAPH_DATABASE_USERNAME", ""), os.getenv("GRAPH_DATABASE_PASSWORD", "")),
     )
     
     app.state.llm = AzureChatOpenAI(
