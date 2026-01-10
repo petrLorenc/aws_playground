@@ -19,3 +19,8 @@ members = [
     "database",
 ]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.14.11",
+]
+

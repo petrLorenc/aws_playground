@@ -1,4 +1,3 @@
-import asyncio
 import json
 from typing import AsyncGenerator
 
@@ -13,7 +12,9 @@ from interfaces.endpoints import APIEndpoints
 router = APIRouter()
 
 
-async def generate_stream_response(msg: DatabaseChatRequest, graph, llm) -> AsyncGenerator[str, None]:
+async def generate_stream_response(
+    msg: DatabaseChatRequest, graph, llm
+) -> AsyncGenerator[str, None]:
     """
     Generate streaming response chunks.
     This is a placeholder - will be replaced with actual database/LLM call.
@@ -27,13 +28,13 @@ async def generate_stream_response(msg: DatabaseChatRequest, graph, llm) -> Asyn
     chain = llm
 
     # Use astream() for streaming responses instead of ainvoke()
-    response_stream = chain.astream(msg.query.content) # testing purposes
-    
+    response_stream = chain.astream(msg.query.content)  # testing purposes
+
     async for chunk in response_stream:
         print("Generated chunk:", chunk)
         stream_chunk = StreamChunk(content=chunk.content, done=False)
         yield f"data: {json.dumps(stream_chunk.model_dump())}\n\n"
-    
+
     # Send final chunk
     final_chunk = StreamChunk(content="", done=True)
     yield f"data: {json.dumps(final_chunk.model_dump())}\n\n"
@@ -43,9 +44,9 @@ async def generate_stream_response(msg: DatabaseChatRequest, graph, llm) -> Asyn
 async def chat_stream(
     request: Request,
     database_request: DatabaseChatRequest,
-    graph = Depends(get_graph),
-    llm = Depends(get_llm),
-) -> StreamingResponse: 
+    graph=Depends(get_graph),
+    llm=Depends(get_llm),
+) -> StreamingResponse:
     """
     Handle streaming chat requests.
     """
@@ -64,4 +65,3 @@ async def chat_stream(
 async def health_check() -> dict:
     """Health check endpoint - no auth required."""
     return {"status": "healthy"}
-

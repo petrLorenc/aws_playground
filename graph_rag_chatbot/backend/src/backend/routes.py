@@ -6,7 +6,14 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
 import httpx
-from interfaces.models import ChatRequest, ChatResponse, StreamChunk, DatabaseChatRequest, ChatMessage, MessageRole
+from interfaces.models import (
+    ChatRequest,
+    ChatResponse,
+    StreamChunk,
+    DatabaseChatRequest,
+    ChatMessage,
+    MessageRole,
+)
 from interfaces.endpoints import APIEndpoints
 
 from backend.auth import verify_api_key
@@ -16,13 +23,16 @@ from backend.config import get_settings
 
 router = APIRouter()
 
+
 async def check_rate_limit(request: Request):
     """Dependency to check rate limit."""
     await rate_limiter.check_rate_limit(request)
     return rate_limiter.get_remaining_requests()
 
 
-async def generate_stream_response(message: str, conversation_id: str) -> AsyncGenerator[str, None]:
+async def generate_stream_response(
+    message: str, conversation_id: str
+) -> AsyncGenerator[str, None]:
     """
     Generate streaming response chunks.
     This is a placeholder - will be replaced with actual database/LLM call.
@@ -33,10 +43,10 @@ async def generate_stream_response(message: str, conversation_id: str) -> AsyncG
         ChatMessage(role=MessageRole.USER, content=message),
     )
     request = DatabaseChatRequest(
-            query=ChatMessage(role=MessageRole.USER, content=message),
-            history=previous_messages,
-        )
-        
+        query=ChatMessage(role=MessageRole.USER, content=message),
+        history=previous_messages,
+    )
+
     async with httpx.AsyncClient() as client:
         async with client.stream(
             "POST",
@@ -54,7 +64,7 @@ async def generate_stream_response(message: str, conversation_id: str) -> AsyncG
                 )
                 yield f"data: {json.dumps(stream_chunk.model_dump())}\n\n"
                 return
-            
+
             full_message = ""
             async for line in response.aiter_lines():
                 if line.startswith("data: "):
@@ -68,8 +78,7 @@ async def generate_stream_response(message: str, conversation_id: str) -> AsyncG
                 conversation_id,
                 ChatMessage(role=MessageRole.ASSISTANT, content=full_message),
             )
-            
-    
+
 
 @router.post(APIEndpoints.BACKEND_CHAT, response_model=ChatResponse)
 async def chat(
@@ -80,15 +89,17 @@ async def chat(
 ) -> ChatResponse:
     """
     Handle non-streaming chat requests.
-    
+
     Authorization and rate limiting are applied before processing.
     Will query database in the next step.
     """
     conversation_id = chat_request.conversation_id or str(uuid.uuid4())
-    
+
     # Placeholder response - will be replaced with database query
-    response_message = f"Received: {chat_request.message}. Database integration coming soon!"
-    
+    response_message = (
+        f"Received: {chat_request.message}. Database integration coming soon!"
+    )
+
     return ChatResponse(
         message=ChatMessage(role=MessageRole.ASSISTANT, content=response_message),
         conversation_id=conversation_id,
@@ -102,15 +113,15 @@ async def chat_stream(
     chat_request: ChatRequest,
     api_key: str = Depends(verify_api_key),
     rate_limit: int = Depends(check_rate_limit),
-) -> StreamingResponse: 
+) -> StreamingResponse:
     """
     Handle streaming chat requests.
-    
+
     Authorization and rate limiting are applied before processing.
     Returns Server-Sent Events (SSE) stream.
     """
     conversation_id = chat_request.conversation_id or str(uuid.uuid4())
-    
+
     return StreamingResponse(
         generate_stream_response(chat_request.message.content, conversation_id),
         media_type="text/event-stream",
@@ -126,4 +137,3 @@ async def chat_stream(
 async def health_check() -> dict:
     """Health check endpoint - no auth required."""
     return {"status": "healthy"}
-

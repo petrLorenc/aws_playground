@@ -19,17 +19,72 @@ EDUCATION_LEVEL_MAP = {
 
 # ActivityType - maps from tags in JSON
 ACTIVITY_TYPES = [
-    {"id": 1, "name": "soutěž", "description": "Soutěžní aktivity a olympiády", "parent_id": None},
-    {"id": 2, "name": "dobrovolnictví", "description": "Dobrovolnické programy a akce", "parent_id": None},
-    {"id": 3, "name": "osobní rozvoj", "description": "Aktivity zaměřené na rozvoj osobnosti", "parent_id": None},
-    {"id": 4, "name": "stáž", "description": "Pracovní stáže a praxe", "parent_id": None},
-    {"id": 5, "name": "výjezd do zahraničí", "description": "Zahraniční pobyty a výměny", "parent_id": None},
-    {"id": 6, "name": "kurz", "description": "Vzdělávací kurzy a workshopy", "parent_id": 3},  # parent: osobní rozvoj
-    {"id": 7, "name": "stipendium", "description": "Stipendijní programy", "parent_id": 5},  # parent: výjezd do zahraničí
-    {"id": 8, "name": "studium v čr", "description": "Studijní programy v ČR", "parent_id": None},
-    {"id": 9, "name": "dobrovolnická centra v čr", "description": "Centra koordinující dobrovolnictví", "parent_id": 2}, # parent: dobrovolnictví
-    {"id": 10, "name": "inspirativní stránky", "description": "Informační a inspirativní zdroje", "parent_id": None},
-    {"id": 11, "name": "odkazy", "description": "Rozcestníky a odkazy", "parent_id": None},
+    {
+        "id": 1,
+        "name": "soutěž",
+        "description": "Soutěžní aktivity a olympiády",
+        "parent_id": None,
+    },
+    {
+        "id": 2,
+        "name": "dobrovolnictví",
+        "description": "Dobrovolnické programy a akce",
+        "parent_id": None,
+    },
+    {
+        "id": 3,
+        "name": "osobní rozvoj",
+        "description": "Aktivity zaměřené na rozvoj osobnosti",
+        "parent_id": None,
+    },
+    {
+        "id": 4,
+        "name": "stáž",
+        "description": "Pracovní stáže a praxe",
+        "parent_id": None,
+    },
+    {
+        "id": 5,
+        "name": "výjezd do zahraničí",
+        "description": "Zahraniční pobyty a výměny",
+        "parent_id": None,
+    },
+    {
+        "id": 6,
+        "name": "kurz",
+        "description": "Vzdělávací kurzy a workshopy",
+        "parent_id": 3,
+    },  # parent: osobní rozvoj
+    {
+        "id": 7,
+        "name": "stipendium",
+        "description": "Stipendijní programy",
+        "parent_id": 5,
+    },  # parent: výjezd do zahraničí
+    {
+        "id": 8,
+        "name": "studium v čr",
+        "description": "Studijní programy v ČR",
+        "parent_id": None,
+    },
+    {
+        "id": 9,
+        "name": "dobrovolnická centra v čr",
+        "description": "Centra koordinující dobrovolnictví",
+        "parent_id": 2,
+    },  # parent: dobrovolnictví
+    {
+        "id": 10,
+        "name": "inspirativní stránky",
+        "description": "Informační a inspirativní zdroje",
+        "parent_id": None,
+    },
+    {
+        "id": 11,
+        "name": "odkazy",
+        "description": "Rozcestníky a odkazy",
+        "parent_id": None,
+    },
 ]
 
 # Location - Czech regions + special locations
@@ -95,17 +150,37 @@ STATES = [
 
 # Skill
 SKILLS = [
-    {"id": 1, "name": "komunikace", "description": "Prezentační a komunikační dovednosti"},
+    {
+        "id": 1,
+        "name": "komunikace",
+        "description": "Prezentační a komunikační dovednosti",
+    },
     {"id": 2, "name": "týmová práce", "description": "Spolupráce v týmu"},
     {"id": 3, "name": "leadership", "description": "Vedení lidí a projektů"},
-    {"id": 4, "name": "projektový management", "description": "Plánování a řízení projektů"},
+    {
+        "id": 4,
+        "name": "projektový management",
+        "description": "Plánování a řízení projektů",
+    },
     {"id": 5, "name": "jazyky", "description": "Jazykové dovednosti"},
-    {"id": 6, "name": "vědecká práce", "description": "Výzkumné metody a vědecké psaní"},
-    {"id": 7, "name": "grafika", "description": "Grafický design a vizuální komunikace"},
+    {
+        "id": 6,
+        "name": "vědecká práce",
+        "description": "Výzkumné metody a vědecké psaní",
+    },
+    {
+        "id": 7,
+        "name": "grafika",
+        "description": "Grafický design a vizuální komunikace",
+    },
     {"id": 8, "name": "programování", "description": "IT a programovací dovednosti"},
     {"id": 9, "name": "psaní", "description": "Žurnalistika a kreativní psaní"},
     {"id": 10, "name": "public speaking", "description": "Veřejné vystupování"},
-    {"id": 11, "name": "mezikulturní kompetence", "description": "Práce v mezinárodním prostředí"},
+    {
+        "id": 11,
+        "name": "mezikulturní kompetence",
+        "description": "Práce v mezinárodním prostředí",
+    },
     {"id": 12, "name": "organizace akcí", "description": "Event management"},
     {"id": 13, "name": "mentoring", "description": "Práce s lidmi, koučink"},
     {"id": 14, "name": "administrativa", "description": "Administrativní dovednosti"},
@@ -133,38 +208,70 @@ JOBS = [
 
 # Skill -> Job mapping (which skills are useful for which jobs)
 SKILL_JOB_MAPPING = [
-    (8, 1),   # programování -> Programátor
-    (6, 2),   # vědecká práce -> Vědec
-    (9, 3),   # psaní -> Novinář
-    (7, 4),   # grafika -> Grafik
-    (4, 5),   # projektový management -> Projektový manažer
+    (8, 1),  # programování -> Programátor
+    (6, 2),  # vědecká práce -> Vědec
+    (9, 3),  # psaní -> Novinář
+    (7, 4),  # grafika -> Grafik
+    (4, 5),  # projektový management -> Projektový manažer
     (13, 6),  # mentoring -> Učitel
-    (5, 7),   # jazyky -> Překladatel
+    (5, 7),  # jazyky -> Překladatel
     (11, 8),  # mezikulturní kompetence -> Diplomat
-    (2, 9),   # týmová práce -> NGO pracovník
+    (2, 9),  # týmová práce -> NGO pracovník
     (1, 10),  # komunikace -> Marketing specialista
-    (12, 11), # organizace akcí -> Event manažer
+    (12, 11),  # organizace akcí -> Event manažer
     (1, 12),  # komunikace -> HR specialista
-    (10, 13), # public speaking -> Konzultant
+    (10, 13),  # public speaking -> Konzultant
     (7, 14),  # grafika -> Architekt
     (3, 15),  # leadership -> Podnikatel
-    (15, 15), # networking -> Podnikatel
+    (15, 15),  # networking -> Podnikatel
 ]
 
 # Field - Thematic domains
 FIELDS = [
-    {"id": 1, "name": "věda a výzkum", "description": "Přírodní vědy, technologie, výzkum"},
-    {"id": 2, "name": "humanitární práce", "description": "Pomoc potřebným, sociální práce"},
-    {"id": 3, "name": "žurnalistika a média", "description": "Noviny, TV, online média"},
-    {"id": 4, "name": "IT a technologie", "description": "Programování, digitální technologie"},
-    {"id": 5, "name": "kultura a umění", "description": "Výtvarné umění, hudba, divadlo, design"},
+    {
+        "id": 1,
+        "name": "věda a výzkum",
+        "description": "Přírodní vědy, technologie, výzkum",
+    },
+    {
+        "id": 2,
+        "name": "humanitární práce",
+        "description": "Pomoc potřebným, sociální práce",
+    },
+    {
+        "id": 3,
+        "name": "žurnalistika a média",
+        "description": "Noviny, TV, online média",
+    },
+    {
+        "id": 4,
+        "name": "IT a technologie",
+        "description": "Programování, digitální technologie",
+    },
+    {
+        "id": 5,
+        "name": "kultura a umění",
+        "description": "Výtvarné umění, hudba, divadlo, design",
+    },
     {"id": 6, "name": "životní prostředí", "description": "Ekologie, ochrana přírody"},
     {"id": 7, "name": "podnikání", "description": "Startupy, business, ekonomika"},
-    {"id": 8, "name": "mezinárodní vztahy", "description": "Diplomacie, EU, zahraniční politika"},
+    {
+        "id": 8,
+        "name": "mezinárodní vztahy",
+        "description": "Diplomacie, EU, zahraniční politika",
+    },
     {"id": 9, "name": "vzdělávání", "description": "Pedagogika, výuka"},
-    {"id": 10, "name": "sociální vědy", "description": "Historie, sociologie, politologie"},
+    {
+        "id": 10,
+        "name": "sociální vědy",
+        "description": "Historie, sociologie, politologie",
+    },
     {"id": 11, "name": "zdravotnictví", "description": "Medicína, zdraví"},
-    {"id": 12, "name": "právo a lidská práva", "description": "Právní oblast, aktivismus"},
+    {
+        "id": 12,
+        "name": "právo a lidská práva",
+        "description": "Právní oblast, aktivismus",
+    },
 ]
 
 # Format - Delivery formats
@@ -196,7 +303,11 @@ FUNDING_TYPES = [
 FUNDING_KEYWORDS = {
     1: ["zdarma", "free of charge", "no cost"],  # zdarma
     2: ["plné stipendium", "full scholarship", "fully funded"],  # plné stipendium
-    3: ["částečné stipendium", "partial scholarship", "partially funded"],  # částečné stipendium
+    3: [
+        "částečné stipendium",
+        "partial scholarship",
+        "partially funded",
+    ],  # částečné stipendium
     4: ["grant", "financial support", "funding"],  # grant
     5: ["placená účast", "paid participation", "fee"],  # placená účast
     6: ["placená stáž", "paid internship", "paid placement"],  # placená stáž
@@ -219,21 +330,43 @@ FORMAT_KEYWORDS = {
 
 # Keywords for Field detection (used in load_graph.py)
 FIELD_KEYWORDS = {
-    1: ["věd", "výzkum", "science", "research", "laborat", "experiment"],  # věda a výzkum
+    1: [
+        "věd",
+        "výzkum",
+        "science",
+        "research",
+        "laborat",
+        "experiment",
+    ],  # věda a výzkum
     2: ["humanit", "pomoc", "sociál", "dobrovoln", "charit"],  # humanitární práce
     3: ["žurnalist", "novin", "média", "redak", "journalism"],  # žurnalistika
-    4: ["IT", "program", "techno", "digital", "software", "coding", "python", "web"],  # IT
+    4: [
+        "IT",
+        "program",
+        "techno",
+        "digital",
+        "software",
+        "coding",
+        "python",
+        "web",
+    ],  # IT
     5: ["umění", "kultur", "design", "art", "creative", "hudba", "divadl"],  # kultura
     6: ["environment", "ekolog", "přír", "sustain", "climat"],  # životní prostředí
     7: ["podnik", "startup", "business", "ekonom", "entrepreneur"],  # podnikání
-    8: ["mezinárodn", "diplomat", "EU", "zahranič", "international"],  # mezinárodní vztahy
+    8: [
+        "mezinárodn",
+        "diplomat",
+        "EU",
+        "zahranič",
+        "international",
+    ],  # mezinárodní vztahy
     9: ["vzděláv", "pedagog", "učit", "škol", "education", "teach"],  # vzdělávání
     10: ["histor", "sociolog", "politolog", "společ"],  # sociální vědy
     11: ["zdrav", "medicín", "lékař", "health"],  # zdravotnictví
     12: ["práv", "lidsk", "human rights", "legal", "aktivis"],  # právo a lidská práva
 }
 
-# Keywords for Skill detection (used in load_graph.py)  
+# Keywords for Skill detection (used in load_graph.py)
 SKILL_KEYWORDS = {
     1: ["komunikac", "prezenta", "communication"],  # komunikace
     2: ["tým", "team", "spolupráce"],  # týmová práce
@@ -288,14 +421,12 @@ RELATIONSHIP_TYPES = {
     "PARENT_OF": "ActivityType is parent of ActivityType",
     "LOCATED_IN": "Location is located in Location/State",
     "USED_IN": "Skill used in Job",
-    
     # New LLM-generated relationships
     "MENTIONS": "Activity mentions MentionedEntity (org/program/competition)",
     "RELATES_TO": "Concept relates to Concept",
     "HAS_CONCEPT": "Activity has Concept",
     "USES_TECHNOLOGY": "Activity uses Technology",
     "PREPARES_FOR": "Activity prepares for Job/Field",
-    
     # Activity-to-Activity relationships
     "SIMILAR_TO": "Activity is similar to Activity (with similarity score)",
     "LEADS_TO": "Activity leads to Activity (progression path)",

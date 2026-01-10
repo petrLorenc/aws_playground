@@ -61,6 +61,7 @@ class RateLimiter:
         used_requests = len(self._requests)
         return max(0, settings.rate_limit_requests - used_requests)
 
+
 # Global rate limiter instance
 # No need for Sigleton pattern here as state is shared in this instance
 rate_limiter = RateLimiter()

@@ -21,9 +21,11 @@ class ChatRequest(BaseModel):
     conversation_id: Optional[str] = None
     stream: bool = True
 
+
 class DatabaseChatRequest(BaseModel):
     query: ChatMessage
     history: List[ChatMessage] = []
+
 
 class ChatResponse(BaseModel):
     message: ChatMessage

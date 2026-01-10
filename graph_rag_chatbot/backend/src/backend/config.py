@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     """Application settings."""
-    
+
     """
     If you create a model that inherits from BaseSettings,
     the model initialiser will attempt to determine the values 
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
-    
+
     # API Settings
     api_title: str = "Graph RAG Chatbot API"
     api_version: str = "1.0.0"
@@ -29,14 +29,15 @@ class Settings(BaseSettings):
 
     # Authorization
     api_key: str = "dev-api-key"  # Override in production
-    
+
     # Rate Limiting
     rate_limit_requests: int = 100  # Max requests per window
     rate_limit_window_seconds: int = 60  # Time window in seconds
-    
+
     # Database Settings
     database_url: str = "http://localhost:9010"  # Override in production
     database_api_key: str = "my-secret"  # Override in production
+
 
 # delayed singleton pattern for settings
 # want to try it from https://www.lihil.cc/blog/design-patterns-you-should-unlearn-in-python-part1/

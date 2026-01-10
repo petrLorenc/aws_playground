@@ -3,11 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from langchain_neo4j import Neo4jGraph, GraphCypherQAChain
 from langchain_openai import AzureChatOpenAI
 from pydantic import SecretStr
 from dotenv import load_dotenv
-from neo4j import GraphDatabase, RoutingControl, Driver
+from neo4j import GraphDatabase
 
 
 from database.config import get_settings
@@ -23,15 +22,18 @@ async def lifespan(app: FastAPI):
     # Startup, just for loggin purposes, prepared for database connections etc.
     settings = get_settings()
     print(f"Starting {settings.api_title} v{settings.api_version}")
-    
+
     load_dotenv()
-    
+
     # Create connections to database and LLM
     app.state.driver = GraphDatabase.driver(
         os.getenv("GRAPH_DATABASE_URI", "bolt://localhost:7687"),
-        auth=(os.getenv("GRAPH_DATABASE_USERNAME", ""), os.getenv("GRAPH_DATABASE_PASSWORD", "")),
+        auth=(
+            os.getenv("GRAPH_DATABASE_USERNAME", ""),
+            os.getenv("GRAPH_DATABASE_PASSWORD", ""),
+        ),
     )
-    
+
     app.state.llm = AzureChatOpenAI(
         openai_api_type="azure",
         azure_endpoint=os.getenv("API_BASE_URL"),
@@ -42,7 +44,7 @@ async def lifespan(app: FastAPI):
     )
 
     yield
-    
+
     # Shutdown
     print("Shutting down...")
     # Shutdown - close connections
@@ -53,14 +55,14 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     settings = get_settings()
-    
+
     app = FastAPI(
         title=settings.api_title,
         version=settings.api_version,
         debug=settings.debug,
         lifespan=lifespan,
     )
-    
+
     # CORS middleware for frontend communication
     app.add_middleware(
         CORSMiddleware,
@@ -69,10 +71,10 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
+
     # Include routes
     app.include_router(router)
-    
+
     return app
 
 
@@ -82,4 +84,7 @@ app = create_app()
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=get_settings().port, reload=get_settings().debug) 
+
+    uvicorn.run(
+        app, host="0.0.0.0", port=get_settings().port, reload=get_settings().debug
+    )

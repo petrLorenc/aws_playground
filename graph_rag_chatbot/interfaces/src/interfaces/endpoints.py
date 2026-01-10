@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class APIEndpoints:    
+class APIEndpoints:
     # Chat endpoints
     BACKEND_CHAT: str = "/chat"
     BACKEND_CHAT_STREAM: str = "/chat/stream"

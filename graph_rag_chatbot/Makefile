@@ -44,3 +44,7 @@ up-backend:
 
 up-database:	
 	ENV_FILE="./.env" uv run python ./database/src/database/main.py
+
+format:
+	uv run ruff check . --fix --respect-gitignore
+	uv run ruff format . --respect-gitignore
